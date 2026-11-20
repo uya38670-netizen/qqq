@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#1b2a6b">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="OPCM점검">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" href="icons/icon-192.png">
+<link rel="manifest" href="manifest.webmanifest">
+<title>OPCM 일일 점검 일지</title>
+<style>
+@page{size:A4 landscape;margin:8mm}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{font-family:"Malgun Gothic","Apple SD Gothic Neo",sans-serif;font-size:12px;margin:0;color:#111;
+ padding:8px max(8px,env(safe-area-inset-right)) max(8px,env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left))}
+button{font-family:inherit}
+.bar2{position:sticky;top:0;z-index:5;background:#fff;padding:6px 0 4px;border-bottom:1px solid #dde;margin-bottom:8px}
+.gbar{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch}
+.chip{flex:0 0 auto;padding:8px 13px;border:1px solid #1b2a6b;border-radius:20px;background:#fff;color:#1b2a6b;font-size:13px}
+.chip.on{background:#1b2a6b;color:#fff;font-weight:bold}
+.act{display:flex;gap:6px;align-items:center;margin-top:4px;flex-wrap:wrap}
+.act button{padding:8px 12px;border:1px solid #1b2a6b;border-radius:8px;background:#1b2a6b;color:#fff;font-size:13px}
+.act button.sub{background:#fff;color:#1b2a6b}
+.act .hint{font-size:11px;color:#667;margin-left:4px}
+details.bar{background:#f2f4f7;border:1px solid #ccd;padding:8px;margin-bottom:10px;border-radius:6px}
+details.bar summary{font-weight:bold;cursor:pointer}
+.bar .row{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:8px}
+.bar input[type=text]{width:260px;max-width:100%}.bar button{padding:6px 10px}
+.top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;gap:8px}
+h1{font-size:16px;margin:8px 0}
+.sign{border-collapse:collapse}.sign td,.sign th{border:1px solid #000;width:60px;height:40px;text-align:center}
+.sign th{height:22px;background:#f0f0f0}.sign .l{width:28px;font-weight:bold}
+.tw{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table.log{border-collapse:collapse;width:100%}
+.log th,.log td{border:1px solid #000;padding:2px 3px;text-align:center}
+.log thead th{background:#f0f0f0}
+.log td.n{text-align:left;min-width:130px}
+.log tr.g td{background:#dde6f3;font-weight:bold;text-align:left}
+.log td.c{font-size:11px;line-height:1.3;min-width:70px;height:44px;cursor:pointer}
+.log td.c b{display:block;font-weight:normal;color:#06c}
+.log td.c i{display:block;font-style:normal;color:#b30}
+.log td.c span{font-weight:bold}
+.log td.c.off{color:#666;background:#eee}
+.log td.c.by{color:#b45309;background:#fff4e0}
+.log td.c:active{background:#fff8d6}
+.log td.c.today{background:#fffbea}
+.log th.today{background:#ffe680!important}
+.log td.c.sel{outline:3px solid #2f5bd3;outline-offset:-3px;box-shadow:inset 0 0 0 100px rgba(47,91,211,.16)}
+body.mm .log td.no,body.mm .log tr.g td{cursor:pointer}
+.log td.no{min-width:34px}
+.mbar{display:none;gap:6px;flex-wrap:wrap;align-items:center;margin-top:6px;padding:6px;background:#eef2fb;border:1px solid #c9d5f0;border-radius:8px;font-size:13px}
+.mbar button,.mbar select{padding:7px 10px;border:1px solid #1b2a6b;border-radius:8px;background:#1b2a6b;color:#fff;font-size:13px}
+.mbar select{background:#fff;color:#1b2a6b}.mbar button.sub{background:#fff;color:#1b2a6b}
+.mhint{font-size:11px;color:#556;width:100%}
+.act button.sub.on{background:#2f5bd3;color:#fff;border-color:#2f5bd3}
+.log input[type=date]{border:0;background:transparent;font:inherit;width:100%;min-width:104px;text-align:center}
+.log td.rm{min-width:110px;text-align:left;font-size:11px;white-space:pre-wrap;word-break:break-all;cursor:pointer;color:#222}
+.log td.rm:empty::before{content:"🎤";color:#aab;font-size:14px}
+tfoot td{font-weight:bold;background:#f7f7f7}
+thead{display:table-header-group}tr{break-inside:avoid}
+#st{font-size:11px;color:#555}
+dialog{border:1px solid #888;border-radius:10px;padding:14px;width:min(94vw,380px)}
+dialog img{max-width:100%;max-height:170px;display:block;margin:6px 0}
+dialog .chips button{margin:2px;padding:5px 10px}
+dialog label{display:block;margin:8px 0}dialog input[type=number]{width:100px;font-size:16px}
+dialog .btns{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+dialog .btns button{padding:9px 12px;border:1px solid #889;border-radius:8px;background:#fff;font-size:14px}
+dialog .btns button.p{background:#1b2a6b;color:#fff;border-color:#1b2a6b}
+.seg{display:flex;gap:6px;margin:8px 0}
+.seg button{flex:1;padding:11px 4px;border:1px solid #999;border-radius:8px;background:#fff;font-size:15px}
+.seg button.on{color:#fff;border-color:transparent;font-weight:bold}
+.seg [data-s=run].on{background:#2e7d32}.seg [data-s=off].on{background:#6b7280}.seg [data-s=by].on{background:#b45309}
+textarea{width:100%;font:inherit;font-size:16px;padding:8px;border:1px solid #99a;border-radius:6px}
+#rs{font-size:12px;color:#b30;min-height:16px}
+#mic.live{background:#c62828;color:#fff;border-color:#c62828}
+#pdfhost{position:fixed;left:-30000px;top:0;width:1400px;background:#fff;pointer-events:none}
+#pdfhost .pg{width:1400px;height:928px;padding:24px 28px;background:#fff;color:#111;font-size:15px;box-sizing:border-box;overflow:hidden}
+#pdfhost .hm{display:table-cell!important}
+#pdfhost .sign{display:table!important}
+#pdfhost .sign td,#pdfhost .sign th{width:90px;height:52px}#pdfhost .sign th{height:24px}#pdfhost .sign .l{width:34px}
+#pdfhost h1{font-size:24px;margin:4px 0 8px}
+#pdfhost .top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px}
+#pdfhost .log td.c{font-size:14px;height:34px;min-width:0}
+#pdfhost .log td.n{min-width:0}
+#pdfhost .log td.rm{font-size:13px;min-width:0}
+#pdfhost .log td.rm:empty::before{content:""}
+#pdfhost .log td.no{min-width:0}
+.btns .wide{flex:1 1 100%}
+@media(max-width:700px){.hm{display:none}.sign{display:none}.log{font-size:12px}h1{font-size:15px}}
+@media print{
+ .bar2,details.bar,dialog,.hint,.mbar,#pdfhost{display:none!important}
+ .log th.today{background:#f0f0f0!important}.log td.c.today{background:none}
+ .log td.c.sel{outline:none;box-shadow:none}
+ body{padding:0;font-size:9px}.tw{overflow:visible}.hm{display:table-cell!important}.sign{display:table!important}
+ .log td.c{height:24px;font-size:9.5px}.log td.rm{font-size:9px}.log td.rm:empty::before{content:""}
+ .log input[type=date]{-webkit-appearance:none;appearance:none}
+ .log input[type=date]::-webkit-calendar-picker-indicator{display:none}
+ .log td.c.off,.log td.c.by,.log tr.g td,.log thead th{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+</style></head><body>
+
+<div class="bar2">
+ <div class="gbar" id="gbar"></div>
+ <div class="act">
+  <button onclick="makePdf()">📤 PDF 보내기</button>
+  <button class="sub" onclick="doPrint()">🖨 인쇄</button>
+  <button class="sub" id="adb" onclick="toggleAD()">📅 오늘 날짜 반영</button>
+  <button class="sub" id="mmb" onclick="toggleMM()">☑ 다중 선택</button>
+  <button class="sub" id="instb" onclick="showInstall()">📲 홈 화면 설치</button>
+  <button class="sub" onclick="document.getElementById('set').open=!document.getElementById('set').open">⚙ 설정</button>
+  <span class="hint" id="cntinfo"></span>
+ </div>
+ <div class="mbar" id="mbar">
+  <b id="mcnt">선택 0개</b>
+  <select id="mdate" onchange="selCol()"><option value="">날짜 열 전체선택…</option></select>
+  <button onclick="bulkOpen()">일괄 적용</button>
+  <button onclick="bulkRem()">비고 일괄</button>
+  <button class="sub" onclick="selClear()">선택 해제</button>
+  <span class="mhint">칸 · 번호(행 전체) · 대제목 줄(그룹 전체)을 눌러 선택한 뒤 [일괄 적용]</span>
+ </div>
+</div>
+
+<details class="bar" id="set"><summary>설정 · 데이터 연동 · 백업</summary>
+ <div class="row"><b>절감 데이터</b>
+  <input type="text" id="url" placeholder="절감 앱 API 주소 (JSON) 예: https://.../records?date={date}">
+  <button onclick="saveUrl();sync()">연동·가져오기</button></div>
+ <div class="row">
+  <label>파일(JSON/CSV) <input type="file" id="f" accept=".json,.csv"></label>
+  <label><input type="checkbox" id="auto"> 60초 자동갱신</label>
+  <label>실측 보정지수 <input type="number" id="corr" value="2.5" step="0.1" style="width:55px"></label>
+  <label><input type="checkbox" id="intonly" checked> 사진 인식은 앞 두 자리(정수)만 기록</label>
+  <span id="st"></span></div>
+ <div class="row"><b>백업</b>
+  <button onclick="exportBk()">내보내기(JSON)</button>
+  <label>복원 <input type="file" id="bk" accept=".json"></label></div>
+ <div class="row" style="font-size:11px;color:#556">📤 PDF 보내기: 선택한 대제목 화면을 PDF로 만들어 카카오톡 · 웨벡스 · 메일 등으로 바로 공유합니다. 🖨 인쇄는 프린터/PDF 저장용입니다.</div>
+</details>
+
+<div class="top">
+ <h1 id="ttl">■ OPCM 일일 점검 일지</h1>
+ <table class="sign"><tr><th class="l" rowspan="2">결<br>재</th><th>담당</th><th>직장</th><th>매니저</th></tr><tr><td></td><td></td><td></td></tr></table>
+</div>
+
+<div class="tw">
+<table class="log" id="t"><thead><tr>
+ <th>No.</th><th class="hm">담당</th><th>설비 / 공정</th><th class="hm">설치위치</th><th>용량(kW)</th><th>수량</th>
+ <th class="d"><input type="date"></th><th class="d"><input type="date"></th><th class="d"><input type="date"></th><th class="d"><input type="date"></th><th class="d"><input type="date"></th>
+ <th>비고</th></tr></thead>
+ <tbody id="b"></tbody>
+ <tfoot><tr><td colspan="4">점검자 확인</td><td>총수량</td><td id="tot"></td><td colspan="6"></td></tr></tfoot>
+</table>
+</div>
+
+<!-- 점검칸 입력 -->
+<dialog id="idlg" style="max-width:420px;border:1px solid #1b2a6b;border-radius:10px;padding:14px;line-height:1.6">
+ <b style="font-size:15px">📲 홈 화면에 앱 설치</b>
+ <div id="ibody" style="margin:10px 0;font-size:13px"></div>
+ <div style="text-align:right"><button class="sub" onclick="document.getElementById('idlg').close()" style="padding:8px 14px;border:1px solid #1b2a6b;border-radius:8px;background:#fff;color:#1b2a6b">닫기</button></div>
+</dialog>
+<dialog id="dlg"><b id="dt"></b>
+ <div class="seg" id="seg">
+  <button data-s="run" onclick="setSt('run')">가동</button>
+  <button data-s="off" onclick="setSt('off')">미가동</button>
+  <button data-s="by" onclick="setSt('by')">바이패스</button>
+ </div>
+ <div id="runbox">
+  <div class="btns" id="phb" style="margin-top:0">
+   <button onclick="pick('#cam')">📷 촬영</button>
+   <button onclick="pick('#alb')">🖼 사진 선택</button>
+  </div>
+  <img id="pv" alt="" style="display:none">
+  <div id="ds" style="color:#555;font-size:12px;margin-top:4px"></div>
+  <div class="chips" id="ch"></div>
+  <label>주파수 <input type="number" id="hz" step="0.1" inputmode="decimal"> Hz</label>
+  <label>절감률 <input type="number" id="sv" step="0.1" inputmode="decimal"> %</label>
+ </div>
+ <div class="btns">
+  <button class="p" onclick="saveCell()">저장</button>
+  <button onclick="delCell()">삭제</button>
+  <button onclick="$('#dlg').close()">닫기</button>
+ </div>
+</dialog>
+<input type="file" id="cam" accept="image/*" capture="environment" hidden>
+<input type="file" id="alb" accept="image/*" hidden>
+
+<!-- PDF 보내기 -->
+<dialog id="pdlg"><b>PDF 보내기</b>
+ <div id="pst" style="margin:10px 0;font-size:13px"></div>
+ <div class="btns" id="pbt" style="display:none">
+  <button class="p wide" onclick="sharePdf()">📤 공유 (카카오톡 · 웨벡스 · 메일 등)</button>
+  <button onclick="savePdf()">💾 저장</button>
+  <button onclick="viewPdf()">👁 보기</button>
+  <button onclick="closeP()">닫기</button>
+ </div>
+</dialog>
+<div id="pdfhost"></div>
+
+<!-- 비고 음성 입력 -->
+<dialog id="rdlg"><b id="rt0"></b>
+ <textarea id="rt" rows="5" placeholder="음성 입력 또는 직접 입력"></textarea>
+ <div id="rs"></div>
+ <div class="btns">
+  <button id="mic" onclick="toggleMic()">🎤 음성입력</button>
+  <button class="p" onclick="saveRem()">저장</button>
+  <button onclick="clearRem()">삭제</button>
+  <button onclick="closeRem()">닫기</button>
+ </div>
+</dialog>
+
+<script>
+const G=["환경관리실","정수실 · 집수장","냉동실 기계실","생산동 옥상","사출동 옥상 · 설비실","탄산캔라인 워크웨이","공조실 · 배기/급기","기타 설비 (적재기 · COMP실 · 추출실 · BIB)"];
+const R=[
+[1,0,"환경관리실","A시설 슬러지 반송펌프 C.O.S형","환경관리실",11,1],
+[2,0,"환경관리실","B시설 슬러지 반송펌프 C.O.S형","환경관리실",15,1],
+[3,0,"환경관리실","A시설 슬러지 공급펌프 C.O.S형","환경관리실",11,1],
+[4,0,"환경관리실","B시설 슬러지 공급펌프 C.O.S형","환경관리실",15,1],
+[5,1,"정수실","연수현장공급 C.O.S형","정수실",22,1],
+[26,1,"정수실","탄산정수공급펌프 C.O.S형","정수실",22,1],
+[27,1,"정수실","CIP정수공급펌프 C.O.S형","정수실",22,1],
+[28,1,"정수실","지하수 순수 현장공급펌프","정수실",15,1],
+[29,1,"정수실","상수도 순수 현장공급펌프","정수실",15,1],
+[6,1,"정수실","주스(U.H.T)","정수실 집수장",15,1],
+[7,1,"정수실","어셉틱3호 냉각수","정수실 집수장",37,1],
+[8,1,"정수실","워머쿨러 냉각수","정수실 집수장",19,1],
+[9,1,"정수실","용해실(H.T.S.T)","정수실 집수장",22,1],
+[71,1,"정수실","정수실 쿨링타워 1호기","정수실 집수장",22,1],
+[10,2,"냉동실","탄산펫1호 브라인쿨러 순환펌프1,2 C.O.S형","냉동실기계실",30,1],
+[11,3,"냉동실","탄산펫2호 브라인쿨러 순환펌프1,2 C.O.S형","생산동 옥상",15,1],
+[12,3,"냉동실","어셉틱1호 칠러순환펌프1","생산동 옥상",15,1],
+[13,3,"냉동실","어셉틱1호 칠러순환펌프2","생산동 옥상",15,1],
+[14,3,"냉동실","어셉틱1호 칠러순환펌프3","생산동 옥상",15,1],
+[15,3,"냉동실","어셉틱1호 칠러전처리펌프1,2 C.O.S형","생산동 옥상",15,1],
+[16,3,"냉동실","어셉틱1호 칠러추출실펌프1","생산동 옥상",15,1],
+[17,3,"냉동실","어셉틱1호 칠러추출실펌프2","생산동 옥상",15,1],
+[18,3,"냉동실","어셉틱1호 칠러추출실펌프3","생산동 옥상",15,1],
+[19,3,"냉동실","어셉틱1호 칠러추출실펌프4","생산동 옥상",15,1],
+[20,3,"냉동실","어셉틱3호 칠러순환펌프1","생산동 옥상",15,1],
+[21,3,"냉동실","어셉틱3호 칠러순환펌프2","생산동 옥상",15,1],
+[22,3,"냉동실","어셉틱3호 칠러순환펌프3","생산동 옥상",15,1],
+[23,3,"냉동실","어셉틱3호 칠러카보네이터펌프1,2 C.O.S형","생산동 옥상",22,1],
+[24,3,"냉동실","어셉틱3호 셀&튜브펌프1,2 C.O.S형","생산동 옥상",22,1],
+[25,3,"냉동실","탄산칠러순환펌프1,2 C.O.S형","생산동 옥상",11,1],
+[57,3,"냉동실","BIB Line 배기 FAN","생산동 옥상",8,9],
+[63,3,"냉동실","탄산펫 2호 주입실 급기","생산동 옥상",19,1],
+[64,3,"냉동실","탄산펫 2호 공조기 급기","생산동 옥상",22,1],
+[67,3,"냉동실","어셉틱 2호 공조기 급기","생산동 옥상",45,1],
+[75,3,"냉동실","탄산펫1,2,주스,어셉틱2호 배기팬","생산동 옥상",8,1],
+[39,4,"사출","칠러 몰드펌프1","사출동 옥상",22,1],
+[40,4,"사출","칠러 몰드펌프2","사출동 옥상",22,1],
+[41,4,"사출","칠러 몰드펌프3","사출동 옥상",22,1],
+[42,4,"사출","칠러 몰드펌프4","사출동 옥상",22,1],
+[43,4,"사출","칠러 몰드펌프5","사출동 옥상",22,1],
+[44,4,"사출","칠러 몰드펌프6","사출동 옥상",22,1],
+[45,4,"사출","칠러 쿨링펌프1","사출동 옥상",19,1],
+[46,4,"사출","칠러 쿨링펌프2","사출동 옥상",19,1],
+[47,4,"사출","칠러 쿨링펌프3","사출동 옥상",19,1],
+[48,4,"사출","칠러 쿨링펌프4","사출동 옥상",19,1],
+[49,4,"사출","칠러 오일쿨러펌프1","사출동 옥상",11,1],
+[50,4,"사출","칠러 오일쿨러펌프2","사출동 옥상",11,1],
+[51,4,"사출","칠러 오일쿨러펌프3","사출동 옥상",11,1],
+[52,4,"사출","칠러 오일쿨러펌프4","사출동 옥상",11,1],
+[53,4,"사출","칠러 오일쿨러펌프5","사출동 옥상",11,1],
+[58,4,"사출","사출공장 설비실#1 배기 FAN","사출 2층 메자닌하부",19,1],
+[30,5,"탄산캔라인","파스테라이저 워머펌프1","탄산캔라인 워크웨이",11,1],
+[31,5,"탄산캔라인","파스테라이저 워머펌프2","탄산캔라인 워크웨이",11,1],
+[32,5,"탄산캔라인","파스테라이저 워머펌프3","탄산캔라인 워크웨이",11,1],
+[33,5,"탄산캔라인","파스테라이저 워머펌프4","탄산캔라인 워크웨이",11,1],
+[34,5,"탄산캔라인","파스테라이저 워머펌프5-1","탄산캔라인 워크웨이",11,1],
+[35,5,"탄산캔라인","파스테라이저 워머펌프5-2","탄산캔라인 워크웨이",11,1],
+[36,5,"탄산캔라인","파스테라이저 워머펌프6","탄산캔라인 워크웨이",11,1],
+[37,5,"탄산캔라인","파스테라이저 워머펌프7","탄산캔라인 워크웨이",11,1],
+[38,5,"탄산캔라인","파스테라이저 워머펌프8","탄산캔라인 워크웨이",11,1],
+[54,6,"냉동실","어셉틱1호, 탄산캔 배기 FAN","어셉틱전처리 통로",8,7],
+[55,6,"냉동실","어셉틱3호 배기 FAN","어셉틱전처리 통로",8,7],
+[56,6,"냉동실","인플란트 배기 FAN","인플란트 라벨러룸",8,8],
+[65,6,"냉동실","탄산펫 1호 파라믹스 상부 급기","탄산펫1호 파라믹스",22,1],
+[66,6,"냉동실","주스 배합 탱크 상부 급기","탄산펫1호 파라믹스",22,1],
+[69,6,"냉동실","어셉틱 1호 브로윙 급기 공조","어셉틱1호 브로윙룸",37,1],
+[72,6,"냉동실","어셉틱 1호 브로윙 급기 공조","어셉틱1호 브로윙룸",15,1],
+[70,6,"냉동실","인플란트 브로윙 급기 공조","인플란트 옥상",30,1],
+[73,6,"냉동실","인플란트 브로윙 급기 공조","인플란트 옥상",11,1],
+[59,7,"냉동실","콤프레샤","BIB측 COMP실",37,1],
+[60,7,"탄산캔,어셉틱1호","VP-1","탄산캔,어셉틱1호 적재기",11,6],
+[61,7,"어셉틱2호,주스펫","VP-2","어셉틱2호,주스펫 적재기",11,6],
+[62,7,"탄산펫1호,2호","VP-3","탄산펫1호,2호 적재기",11,6],
+[68,7,"배합","추출실 AIR COMP","추출실",75,1],
+[74,7,"BIB","BIB 시험 충전 펌프","BIB 주입실",8,1]
+];
+const GS=["환경관리실","정수실·집수장","냉동실 기계실","생산동 옥상","사출동","탄산캔라인","공조·배기/급기","기타 설비"];
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function ld(k,d){try{return JSON.parse(localStorage.getItem(k)||d)}catch(_){return JSON.parse(d)}}
+let DATA={},LOCAL=ld("opcm_local","{}"),REM=ld("opcm_rem","{}");
+let SELS=ld("opcm_sels","[]");if(!Array.isArray(SELS))SELS=[];SELS=SELS.filter(i=>Number.isInteger(i)&&i>=0&&i<G.length);
+let MM=false;const SC=new Set(); // 다중 선택 칸: "날짜|번호"
+const selLabel=()=>SELS.length?SELS.map(i=>GS[i]).join(", "):"전체";
+const visRows=()=>R.filter(r=>!SELS.length||SELS.includes(r[1]));
+
+function ymd(d){return d.toISOString().slice(0,10)}
+const todayStr=()=>{const t=new Date();return ymd(new Date(t.getTime()-t.getTimezoneOffset()*6e4))};
+function weekDates(){ // 현재 날짜가 속한 주의 월~금 (토·일은 방금 지난 주 월~금)
+ const t=new Date();const m=new Date(t);m.setDate(t.getDate()-((t.getDay()+6)%7));
+ return [0,1,2,3,4].map(i=>{const d=new Date(m);d.setDate(m.getDate()+i);return ymd(new Date(d.getTime()-d.getTimezoneOffset()*6e4))})}
+let AUTODATE=true;try{AUTODATE=localStorage.getItem("opcm_autodate")!=="0"}catch(_){}
+function markToday(){const t=todayStr();document.querySelectorAll("th.d").forEach(th=>th.classList.toggle("today",th.querySelector("input").value===t))}
+function applyDates(){
+ const els=document.querySelectorAll("th.d input");
+ if(AUTODATE)weekDates().forEach((d,i)=>{els[i].value=d});
+ else{const sv=ld("opcm_dates","[]");const w=(Array.isArray(sv)&&sv.length===5)?sv:weekDates();w.forEach((d,i)=>{els[i].value=d})}
+ els.forEach(el=>{el.disabled=AUTODATE});markToday();
+ const bt=$("#adb");if(bt){bt.textContent=AUTODATE?"📅 오늘 날짜 반영: 켬":"📅 오늘 날짜 반영: 끔";bt.classList.toggle("on",AUTODATE)}
+}
+function initDates(){
+ document.querySelectorAll("th.d input").forEach(el=>{el.onchange=()=>{
+  try{localStorage.setItem("opcm_dates",JSON.stringify(dates()))}catch(_){}
+  markToday();render();sync()}});
+ applyDates();
+}
+function toggleAD(){AUTODATE=!AUTODATE;try{localStorage.setItem("opcm_autodate",AUTODATE?"1":"0")}catch(_){}
+ applyDates();SC.clear();render();sync()}
+function refreshDates(){ // 날짜가 바뀌면(앱을 열어 둔 채 자정 경과 등) 자동 반영
+ if(AUTODATE&&weekDates().join()!==dates().join()){applyDates();SC.clear();render();sync()}else markToday()}
+document.addEventListener("visibilitychange",()=>{if(!document.hidden)refreshDates()});
+window.addEventListener("pageshow",refreshDates);setInterval(refreshDates,60000);
+const dates=()=>[...document.querySelectorAll("th.d input")].map(e=>e.value);
+const wk=()=>dates()[0]||"x";
+function get(d,no){return (LOCAL[d]||{})[no]||(DATA[d]||{})[no]}
+function persist(){try{localStorage.setItem("opcm_local",JSON.stringify(LOCAL))}catch(_){}}
+function persistRem(){try{localStorage.setItem("opcm_rem",JSON.stringify(REM))}catch(_){}}
+const DEFREM={"1": "사무실1층-3", "2": "사무실1층-1", "3": "탈수실 2층", "4": "사무실1층-2", "5": "실내-1", "26": "실내-2", "27": "실내-3", "28": "실내4-1", "29": "실내4-2", "6": "집수장3-2", "7": "집수장3-1", "8": "집수장2-2", "9": "집수장2-1", "71": "집수장1", "10": "냉동실", "11": "옥상 첫번째 단독", "12": "옥상1-1", "13": "옥상1-2", "14": "옥상1-3", "15": "옥상2", "16": "옥상3-1", "17": "옥상3-2", "18": "옥상4-1", "19": "옥상4-2", "20": "데크3-1", "21": "데크3-2", "22": "데크3-3", "23": "데크1", "24": "데크2", "25": "옥상 중간 단독", "57": "데크 맞은편 데크", "63": "옥상 데크밑", "64": "옥상 데크 상부", "67": "옥상 공조기 단독", "75": "옥상 배기휠판넬", "39": "옥상5-1", "40": "옥상5-2", "41": "옥상5-3", "42": "옥상6-1", "43": "옥상6-2", "44": "옥상6-3", "45": "옥상3-1", "46": "옥상3-2", "47": "옥상4-1", "48": "옥상4-2", "49": "옥상1-1", "50": "옥상1-2", "51": "옥상1-3", "52": "옥상1-4", "53": "옥상1-5", "58": "1층현장 벽면", "30": "데크1", "31": "데크2", "32": "데크3", "33": "데크4", "34": "데크5", "35": "데크6", "36": "데크7", "37": "데크8", "38": "데크9", "54": "전처리 통로1", "55": "전처리 통로2", "56": "인플란트 변전실 앞", "65": "탄산1호 파라믹스 측면", "66": "탄산1호 파라믹스 측면", "69": "프리폼 저장창고", "72": "프리폼 저장창고", "70": "인플란트 실외 옥상", "73": "인플란트 실외 옥상", "59": "부변전실 앞 ROOM", "60": "계절요인으로 미가동", "61": "계절요인으로 미가동", "62": "계절요인으로 미가동", "68": "추출실 창가", "74": "반복동작"}; // 기본 비고(설치 위치 메모)
+const getRem=no=>{const w=REM[wk()]||{};return no in w?w[no]:(DEFREM[no]||"")};
+
+function cellHtml(d,no,ns){
+ const v=get(d,no);let cls="c",in_="";if(d===todayStr())cls+=" today";
+ if(v){const st=v.st||"run";
+  if(st==="off"){cls+=" off";in_="<span>미가동</span>"}
+  else if(st==="by"){cls+=" by";in_="<span>바이패스</span>"}
+  else in_=`<b>${v.hz} Hz</b><i>${v.save}%</i>`}
+ if(!ns&&SC.has(d+"|"+no))cls+=" sel";
+ return `<td class="${cls}" data-d="${d}" data-no="${no}">${in_}</td>`;
+}
+function chips(){
+ $("#gbar").innerHTML=`<button class="chip${!SELS.length?" on":""}" data-g="-1">전체</button>`+
+  GS.map((n,i)=>`<button class="chip${SELS.includes(i)?" on":""}" data-g="${i}">${n}</button>`).join("");
+}
+$("#gbar").onclick=e=>{const bt=e.target.closest(".chip");if(!bt)return;const g=+bt.dataset.g;
+ if(g<0)SELS=[];else{const k=SELS.indexOf(g);if(k>=0)SELS.splice(k,1);else{SELS.push(g);SELS.sort((x,y)=>x-y)}}
+ try{localStorage.setItem("opcm_sels",JSON.stringify(SELS))}catch(_){}
+ SC.clear();chips();render();window.scrollTo(0,0)};
+
+function render(){
+ const D=dates(),b=$("#b");let h="",tot=0,n=0;
+ G.forEach((g,gi)=>{
+  if(SELS.length&&!SELS.includes(gi))return;
+  const rows=R.filter(r=>r[1]===gi);if(!rows.length)return;
+  h+=`<tr class="g" data-g="${gi}"><td colspan="12">▶ ${g} (${rows.length}개소 / ${rows.reduce((s,r)=>s+r[6],0)}대)</td></tr>`;
+  rows.forEach(r=>{tot+=r[6];n++;
+   h+=`<tr><td class="no" data-no="${r[0]}">${r[0]}</td><td class="hm">${r[2]}</td><td class="n">${r[3]}</td><td class="hm">${r[4]}</td><td>${r[5]}</td><td>${r[6]}</td>`;
+   D.forEach(d=>{h+=cellHtml(d,r[0])});
+   h+=`<td class="rm" data-no="${r[0]}">${esc(getRem(r[0]))}</td></tr>`});
+ });
+ b.innerHTML=h;$("#tot").textContent=tot;
+ $("#ttl").textContent="■ OPCM 일일 점검 일지"+(SELS.length===1?" - "+G[SELS[0]]:SELS.length?" - "+selLabel():"");
+ $("#cntinfo").textContent=selLabel()+" "+n+"개소";
+ $("#mcnt").textContent="선택 "+SC.size+"개";
+ $("#mdate").innerHTML='<option value="">날짜 열 전체선택…</option>'+D.filter(Boolean).map(d=>`<option value="${d}">${d.slice(5)} 전체 선택</option>`).join("");
+}
+function doPrint(){
+ const old=document.title;document.title="OPCM일지_"+selLabel().replace(/[ ,]+/g,"_")+"_"+(dates()[0]||"");
+ window.onafterprint=()=>{document.title=old};window.print();
+}
+
+/* ===== PDF 만들기 · 공유 ===== */
+const PAGE_H=928;let PDF=null;
+const _libs={};
+function loadJs(src){return _libs[src]||(_libs[src]=new Promise((ok,ng)=>{const s=document.createElement("script");s.src=src;s.onload=ok;s.onerror=()=>{delete _libs[src];ng(new Error("load "+src))};document.head.appendChild(s)}))}
+function exportRows(){
+ const D=dates(),items=[];let tot=0;
+ G.forEach((g,gi)=>{
+  if(SELS.length&&!SELS.includes(gi))return;
+  const rows=R.filter(r=>r[1]===gi);if(!rows.length)return;
+  items.push({g:1,html:`<tr class="g"><td colspan="12">▶ ${g} (${rows.length}개소 / ${rows.reduce((s,r)=>s+r[6],0)}대)</td></tr>`});
+  rows.forEach(r=>{tot+=r[6];
+   items.push({g:0,html:`<tr><td class="no">${r[0]}</td><td class="hm">${r[2]}</td><td class="n">${r[3]}</td><td class="hm">${r[4]}</td><td>${r[5]}</td><td>${r[6]}</td>`+
+    D.map(d=>cellHtml(d,r[0],true)).join("")+`<td class="rm">${esc(getRem(r[0]))}</td></tr>`})});
+ });
+ return{items,tot};
+}
+function pageHtml(title,body,no,total,tot,last){
+ const D=dates();
+ return `<div class="pg"><div class="top"><h1>${esc(title)}</h1><table class="sign"><tr><th class="l" rowspan="2">결<br>재</th><th>담당</th><th>직장</th><th>매니저</th></tr><tr><td></td><td></td><td></td></tr></table></div>
+ <table class="log"><thead><tr><th>No.</th><th class="hm">담당</th><th>설비 / 공정</th><th class="hm">설치위치</th><th>용량(kW)</th><th>수량</th>${D.map(d=>`<th>${d||""}</th>`).join("")}<th>비고</th></tr></thead>
+ <tbody>${body}</tbody>${last?`<tfoot><tr><td colspan="4">점검자 확인</td><td>총수량</td><td>${tot}</td><td colspan="6"></td></tr></tfoot>`:""}</table>
+ <div style="text-align:right;font-size:12px;color:#555;margin-top:4px">${no} / ${total}</div></div>`;
+}
+const raf=()=>new Promise(r=>requestAnimationFrame(()=>r()));
+async function makePdf(){
+ $("#pbt").style.display="none";$("#pst").textContent="PDF 준비 중...";
+ if(!$("#pdlg").open)$("#pdlg").showModal();
+ if(PDF&&PDF.url){URL.revokeObjectURL(PDF.url)}PDF=null;
+ try{
+  await loadJs("lib/html2canvas.min.js");await loadJs("lib/jspdf.umd.min.js");
+  const title="■ OPCM 일일 점검 일지"+(SELS.length===1?" - "+G[SELS[0]]:SELS.length?" - "+selLabel():"");
+  const {items,tot}=exportRows();
+  if(!items.length)throw new Error("표시할 항목이 없습니다");
+  const host=$("#pdfhost");
+  host.innerHTML=pageHtml(title,items.map(i=>i.html).join(""),1,1,tot,true);await raf();
+  const trs=[...host.querySelectorAll("table.log > tbody > tr")];
+  trs.forEach((tr,i)=>{items[i].h=tr.getBoundingClientRect().height});
+  const base=host.firstChild.scrollHeight-items.reduce((s,i)=>s+i.h,0);
+  const AV=PAGE_H-Math.max(base,0)-6;
+  const pages=[];let cur=[],h=0;
+  items.forEach(it=>{
+   if(cur.length&&h+it.h>AV){
+    if(cur[cur.length-1].g){const gh=cur.pop();pages.push(cur);cur=[gh];h=gh.h}else{pages.push(cur);cur=[];h=0}
+   }
+   cur.push(it);h+=it.h});
+  if(cur.length)pages.push(cur);
+  const {jsPDF}=window.jspdf;
+  const pdf=new jsPDF({orientation:"landscape",unit:"mm",format:"a4",compress:true});
+  for(let p=0;p<pages.length;p++){
+   $("#pst").textContent=`PDF 만드는 중... ${p+1} / ${pages.length} 페이지`;
+   host.innerHTML=pageHtml(title,pages[p].map(i=>i.html).join(""),p+1,pages.length,tot,p===pages.length-1);await raf();
+   const cv=await html2canvas(host.firstChild,{scale:2,backgroundColor:"#ffffff",logging:false});
+   if(p>0)pdf.addPage();
+   const W=281,Hh=Math.min(194,W*cv.height/cv.width),Ww=Hh===194?194*cv.width/cv.height:W;
+   pdf.addImage(cv.toDataURL("image/jpeg",0.92),"JPEG",(297-Ww)/2,8,Ww,Hh);
+  }
+  host.innerHTML="";
+  const name="OPCM일지_"+selLabel().replace(/[ ,·\\/]+/g,"_")+"_"+(dates()[0]||"")+".pdf";
+  const blob=pdf.output("blob");
+  PDF={name,blob,file:new File([blob],name,{type:"application/pdf"}),url:URL.createObjectURL(blob)};
+  $("#pst").textContent=`${name} (${pages.length}페이지, ${(blob.size/1024).toFixed(0)}KB) 준비 완료`;
+  $("#pbt").style.display="flex";
+ }catch(e){$("#pst").textContent="PDF 생성 실패: "+e.message+" (처음 한 번은 인터넷 연결이 필요할 수 있습니다)";
+  $("#pbt").style.display="flex";$("#pbt").querySelectorAll("button:not(:last-child)").forEach(b=>b.style.display="none")}
+}
+function pbtReset(){$("#pbt").querySelectorAll("button").forEach(b=>b.style.display="")}
+async function sharePdf(){
+ if(!PDF)return;
+ if(navigator.canShare&&navigator.canShare({files:[PDF.file]})){
+  try{await navigator.share({files:[PDF.file],title:PDF.name})}
+  catch(e){if(e.name!=="AbortError"){alert("공유할 수 없어 파일로 저장합니다");savePdf()}}
+ }else{alert("이 브라우저는 파일 공유를 지원하지 않아 저장합니다. 저장된 PDF를 카카오톡 · 웨벡스에서 첨부하세요.");savePdf()}
+}
+function savePdf(){if(!PDF)return;const a=document.createElement("a");a.href=PDF.url;a.download=PDF.name;document.body.appendChild(a);a.click();a.remove()}
+function viewPdf(){if(PDF)window.open(PDF.url,"_blank")}
+function closeP(){$("#pdlg").close();pbtReset()}
+$("#pdlg").addEventListener("close",pbtReset);
+
+/* ===== 데이터 연동 ===== */
+function ingest(x,dflt){
+ const put=(d,no,hz,sv)=>{if(!d||no==null)return;(DATA[d]=DATA[d]||{})[+no]={hz:(+hz).toFixed(1),save:(+sv).toFixed(1)}};
+ if(Array.isArray(x))x.forEach(o=>put(o.date||dflt,o.no,o.hz??o.freq,o.save??o.saving));
+ else if(x&&x.records)ingest(x.records,dflt);
+ else if(x)Object.entries(x).forEach(([d,m])=>{
+  if(/^\d{4}-\d{2}-\d{2}$/.test(d))Object.entries(m).forEach(([no,o])=>put(d,no,o.hz??o.freq,o.save??o.saving));
+  else if(dflt)put(dflt,d,m.hz??m.freq,m.save??m.saving)});
+}
+async function sync(){
+ const u=$("#url").value.trim();if(!u)return;
+ $("#st").textContent="동기화 중...";
+ try{
+  for(const d of dates()){if(!d)continue;
+   const r=await fetch(u.replace("{date}",d));ingest(await r.json(),d)}
+  $("#st").textContent="마지막 동기화 "+new Date().toLocaleTimeString("ko-KR");
+ }catch(e){$("#st").textContent="연동 실패(주소·CORS 확인) - 파일 가져오기를 이용하세요"}
+ render();
+}
+$("#f").onchange=async e=>{
+ const f=e.target.files[0];if(!f)return;const t=await f.text();
+ if(f.name.endsWith(".csv")){
+  ingest(t.trim().split(/\r?\n/).slice(1).map(l=>{const[a,b,c,d]=l.split(",");return{date:a.trim(),no:b,hz:c,save:d}}))
+ }else ingest(JSON.parse(t));
+ $("#st").textContent="파일 불러옴: "+f.name;render();
+};
+function saveUrl(){try{localStorage.setItem("opcm_url",$("#url").value)}catch(_){}}
+let tm;$("#auto").onchange=e=>{clearInterval(tm);if(e.target.checked)tm=setInterval(sync,6e4)};
+try{$("#url").value=localStorage.getItem("opcm_url")||""}catch(_){}
+
+/* ===== 백업 ===== */
+function exportBk(){
+ const blob=new Blob([JSON.stringify({v:1,LOCAL,REM})],{type:"application/json"});
+ const a=document.createElement("a");a.href=URL.createObjectURL(blob);
+ a.download="OPCM점검일지_백업_"+new Date().toISOString().slice(0,10)+".json";document.body.appendChild(a);a.click();a.remove();
+}
+$("#bk").onchange=async e=>{
+ const f=e.target.files[0];if(!f)return;
+ try{const j=JSON.parse(await f.text());
+  if(j.LOCAL)Object.entries(j.LOCAL).forEach(([d,m])=>{LOCAL[d]=Object.assign(LOCAL[d]||{},m)});
+  if(j.REM)Object.entries(j.REM).forEach(([w,m])=>{REM[w]=Object.assign(REM[w]||{},m)});
+  persist();persistRem();render();alert("복원했습니다")}catch(_){alert("백업 파일을 읽을 수 없습니다")}
+ e.target.value="";
+};
+
+/* ===== 점검칸: 상태 · 사진 · 주파수 · 절감률 ===== */
+// 상사법칙 실측 보정: 60Hz 대비 (1-(f/60)^n)*100
+function calc(hz){hz=+hz;if(!(hz>=0))return "";const n=+($("#corr").value||2.5);
+ return Math.max(0,Math.min(100,(1-Math.pow(hz/60,n))*100)).toFixed(1)}
+let cur=null,cs="run",curR=null,RB=null,BULK=false;
+const keyList=(r_)=>r_.flatMap(no=>dates().filter(Boolean).map(d=>d+"|"+no));
+function tog(keys){const all=keys.length&&keys.every(k=>SC.has(k));keys.forEach(k=>all?SC.delete(k):SC.add(k));render()}
+function toggleMM(){MM=!MM;SC.clear();document.body.classList.toggle("mm",MM);
+ $("#mbar").style.display=MM?"flex":"none";$("#mmb").classList.toggle("on",MM);render()}
+function selClear(){SC.clear();render()}
+function selCol(){const d=$("#mdate").value;if(!d)return;tog(visRows().map(r=>d+"|"+r[0]))}
+$("#b").addEventListener("click",e=>{
+ if(MM){
+  const td=e.target.closest("td.c");
+  if(td){if(!td.dataset.d){alert("먼저 날짜를 선택하세요");return}tog([td.dataset.d+"|"+td.dataset.no]);return}
+  const no=e.target.closest("td.no");
+  if(no){tog(keyList([+no.dataset.no]));return}
+  const g=e.target.closest("tr.g");
+  if(g){tog(keyList(R.filter(r=>r[1]===+g.dataset.g).map(r=>r[0])));return}
+  return;
+ }
+ const td=e.target.closest("td.c");
+ if(td){cur={d:td.dataset.d,no:+td.dataset.no};if(!cur.d){alert("먼저 날짜를 선택하세요");return}BULK=false;openDlg();return}
+ const rm=e.target.closest("td.rm");
+ if(rm){curR=+rm.dataset.no;RB=null;openRem()}
+});
+function bulkOpen(){
+ if(!SC.size){alert("먼저 칸을 선택하세요");return}
+ BULK=true;cur=null;
+ const nos=new Set(),ds=new Set();SC.forEach(k=>{const i=k.indexOf("|");ds.add(k.slice(0,i));nos.add(k.slice(i+1))});
+ $("#dt").textContent=`선택 ${SC.size}칸 일괄 적용 (설비 ${nos.size}개 · 날짜 ${ds.size}일)`;
+ setSt("run");$("#hz").value="";$("#sv").value="";$("#ch").innerHTML="";$("#ds").textContent="";
+ $("#pv").style.display="none";$("#phb").style.display="none";
+ if(!$("#dlg").open)$("#dlg").showModal();
+}
+function bulkRem(){
+ if(!SC.size){alert("먼저 칸을 선택하세요");return}
+ RB=[...new Set([...SC].map(k=>+k.slice(k.indexOf("|")+1)))];openRem();
+}
+function setSt(s){cs=s;document.querySelectorAll("#seg button").forEach(b=>b.classList.toggle("on",b.dataset.s===s));
+ $("#runbox").style.display=s==="run"?"":"none"}
+function pick(id){const el=$(id);el.value="";el.click()}
+function openDlg(){
+ const r=R.find(x=>x[0]===cur.no),v=get(cur.d,cur.no)||{};
+ $("#dt").textContent=`${cur.d} · No.${cur.no} ${r[3]}`;
+ setSt(v.st||"run");$("#phb").style.display="";
+ $("#hz").value=v.hz||"";$("#sv").value=v.save||"";$("#ch").innerHTML="";$("#ds").textContent="";
+ $("#pv").removeAttribute("src");$("#pv").style.display="none";
+ if(!$("#dlg").open)$("#dlg").showModal();
+}
+$("#hz").oninput=()=>{$("#sv").value=calc($("#hz").value)};
+async function photo(f){
+ if(!f||!cur)return;
+ $("#pv").src=URL.createObjectURL(f);$("#pv").style.display="block";
+ $("#hz").value="";$("#sv").value="";$("#ch").innerHTML="";$("#ds").textContent="주파수 인식 중...";
+ try{
+  const rd=await readFreq(f);
+  $("#ch").innerHTML=rd.list.map(n=>`<button onclick="setHz('${n}')">${n}</button>`).join("");
+  if(rd.list.length){setHz(rd.list[0]);
+   $("#ds").textContent=rd.via==="led"?`표시창 ${rd.raw} 인식 → ${intOnly()?"앞 두 자리 "+rd.int+" Hz 적용":"주파수 적용"} (틀리면 수정)`:"자동 인식이 불확실합니다. 값을 꼭 확인하세요"}
+  else $("#ds").textContent="인식 실패 - 주파수를 직접 입력하세요";
+ }catch(err){$("#ds").textContent="인식하지 못했습니다 - 주파수를 직접 입력하세요"}
+}
+$("#cam").onchange=e=>photo(e.target.files[0]);
+$("#alb").onchange=e=>photo(e.target.files[0]);
+function setHz(n){$("#hz").value=n;$("#sv").value=calc(n)}
+function entry(){
+ if(cs==="run"){const hz=+$("#hz").value;if($("#hz").value===""||!(hz>=0)){alert("주파수를 입력하세요");return null}
+  return{st:"run",hz:hz.toFixed(1),save:(+$("#sv").value||0).toFixed(1)}}
+ return{st:cs};
+}
+const targets=()=>BULK?[...SC].map(k=>{const i=k.indexOf("|");return[k.slice(0,i),+k.slice(i+1)]}):[[cur.d,cur.no]];
+function saveCell(){
+ const en=entry();if(!en)return;
+ targets().forEach(([d,no])=>{(LOCAL[d]=LOCAL[d]||{})[no]=Object.assign({},en)});
+ persist();$("#dlg").close();if(BULK){SC.clear();BULK=false}render();
+}
+function delCell(){
+ if(BULK&&!confirm(`선택한 ${SC.size}칸의 기록을 삭제할까요?`))return;
+ targets().forEach(([d,no])=>{if(LOCAL[d])delete LOCAL[d][no]});
+ persist();$("#dlg").close();if(BULK){SC.clear();BULK=false}render();
+}
+/* ===== LED 7세그먼트 숫자 인식 ===== */
+/* 7세그먼트(빨간 LED) 숫자 인식기: RGBA 이미지 -> 숫자열
+   1) 빨간 LED 픽셀 추출  2) 숫자 단위 덩어리 찾기  3) 기울기(이탤릭)·회전 보정  4) 세그먼트 7개 점등 판독 */
+function seg7Read(d,W,H){
+ const N=W*H,loose=new Uint8Array(N),core=new Uint8Array(N);
+ // 어두운 사진 보정: 가장 밝은 붉은 값이 낮으면 전체를 키워서 판독
+ const hr=new Uint32Array(256);for(let p=0;p<d.length;p+=4)hr[d[p]]++;
+ let acc=0,p995=255;for(let v=255;v>=0;v--){acc+=hr[v];if(acc>=N*0.005){p995=v;break}}
+ const gain=p995<200&&p995>40?Math.min(2.2,215/p995):1;
+ for(let i=0,p=0;i<N;i++,p+=4){const r=Math.min(255,d[p]*gain),g=Math.min(255,d[p+1]*gain),b=Math.min(255,d[p+2]*gain);
+  if(r>95&&r-Math.max(g,b)>42&&g<0.72*r&&b<0.74*r){loose[i]=1;
+   if(r>150&&g<0.42*r&&b<0.46*r&&r-Math.max(g,b)>80)core[i]=1}}
+ const dil=s=>{const o=new Uint8Array(N);
+  for(let y=1;y<H-1;y++)for(let x=1;x<W-1;x++){const i=y*W+x;
+   if(s[i]||s[i-1]||s[i+1]||s[i-W]||s[i+W]||s[i-W-1]||s[i-W+1]||s[i+W-1]||s[i+W+1])o[i]=1}return o};
+ const label=(dm)=>{const lab=new Int32Array(N),comps=[];let nl=0;const st=[];
+  for(let s=0;s<N;s++){if(!dm[s]||lab[s])continue;nl++;lab[s]=nl;st.length=0;st.push(s);
+   let a=0,cr=0,x0=W,x1=0,y0=H,y1=0;
+   while(st.length){const i=st.pop(),x=i%W,y=(i-x)/W;
+    if(loose[i]){a++;if(core[i])cr++}
+    if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y;
+    for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){const nx=x+dx,ny=y+dy;
+     if(nx<0||ny<0||nx>=W||ny>=H)continue;const j=ny*W+nx;if(dm[j]&&!lab[j]){lab[j]=nl;st.push(j)}}}
+   comps.push({l:nl,a,core:cr,x0,x1,y0,y1,w:x1-x0+1,h:y1-y0+1,cy:(y0+y1)/2,cx:(x0+x1)/2})}
+  return{lab,comps}};
+ // 소수점·단위 표시 같은 작은 점은 따로 기록해 두고 숫자 덩어리에서는 빼 둔다(숫자끼리 붙는 것을 방지)
+ const L00=label(loose);let maxLED=0;
+ for(const c of L00.comps)if(c.core>=0.3*c.a&&c.a>maxLED)maxLED=c.a;
+ const thr=Math.max(6,0.05*maxLED),smalls=L00.comps.filter(c=>c.a<thr);
+ for(let i=0;i<N;i++)if(loose[i]&&L00.comps[L00.lab[i]-1].a<thr){loose[i]=0;core[i]=0}
+ // 숫자 한 칸 크기가 되도록 팽창 반경(1~4)을 바꿔 가며 '키·높이가 같은 덩어리 줄'을 찾는다
+ let dm=loose,best=null;const byR={};
+ for(let r=0;r<=4;r++){
+  if(r>0)dm=dil(dm);
+  const L=label(dm);byR[r]=L;
+  const pool=L.comps.filter(c=>c.a>=8&&c.h>=6);
+  if(pool.length>400||!pool.length)continue;
+  for(const s of pool){
+   const cl=pool.filter(c=>Math.abs(c.cy-s.cy)<=0.25*s.h&&c.h>=0.72*s.h&&c.h<=1.3*s.h&&c.w<=1.2*c.h);
+   const sum=cl.reduce((q,c)=>q+c.a,0),cr=cl.reduce((q,c)=>q+c.core,0);
+   if(cl.length>=2&&cr>=0.1*sum&&(!best||sum>best.sum*1.02))best={sum,cl,r}}}
+ if(!best)return{ok:false,why:"no-row"};
+ const {lab,comps:allC}=byR[best.r],blobs=best.cl.sort((p,q)=>p.cx-q.cx);
+ const idx=new Map();blobs.forEach((b,i)=>idx.set(b.l,i));
+ // 숫자에 붙어 있는 작은 점(소수점·단위 표시 막대)은 숫자 판독에서 제외
+ const L0=byR[0],blobA=blobs.map(b=>b.a).sort((p,q)=>p-q),medA=blobA[Math.floor(blobA.length/2)];
+ const pts=blobs.map(()=>[]);
+ for(let i=0;i<N;i++)if(loose[i]){const k=idx.get(lab[i]);if(k!==undefined){const c0=L0.comps[L0.lab[i]-1];if(c0&&c0.a>=0.12*medA)pts[k].push(i%W,(i/W)|0)}}
+ let mx=0,my=0,nn=0;for(const a of pts)for(let i=0;i<a.length;i+=2){mx+=a[i];my+=a[i+1];nn++}mx/=nn;my/=nn;
+ const area=(th,s)=>{const c=Math.cos(th),sn=Math.sin(th);let tot=0;
+  for(const a of pts){let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;
+   for(let i=0;i<a.length;i+=2){const X=a[i]-mx,Y=a[i+1]-my,x1_=X*c-Y*sn,y_=X*sn+Y*c,x=x1_-s*y_;
+    if(x<x0)x0=x;if(x>x1)x1=x;if(y_<y0)y0=y_;if(y_>y1)y1=y_}
+   tot+=(x1-x0)*(y1-y0)}return tot};
+ let bt=0,bs=0,bsc=1e18;
+ const rng=(t0,t1,ts,s0,s1,ss)=>{for(let td=t0;td<=t1+1e-9;td+=ts){const th=td*Math.PI/180;
+  for(let s=s0;s<=s1+1e-9;s+=ss){const v=area(th,s);if(v<bsc){bsc=v;bt=th;bs=s}}}};
+ rng(-20,20,2,-0.4,0.4,0.05);
+ {const t0=bt*180/Math.PI,s0=bs;rng(t0-2,t0+2,0.5,s0-0.05,s0+0.05,0.0125)}
+ const c=Math.cos(bt),sn=Math.sin(bt);
+ const T=pts.map(a=>{const X=[],Y=[];for(let i=0;i<a.length;i+=2){const x=a[i]-mx,y=a[i+1]-my,xr=x*c-y*sn,yr=x*sn+y*c;X.push(xr-bs*yr);Y.push(yr)}return{X,Y}});
+ const allY=[];for(const t of T)for(const y of t.Y)allY.push(y);allY.sort((p,q)=>p-q);
+ const yT=allY[Math.floor(allY.length*0.005)],yB=allY[Math.ceil(allY.length*0.995)-1],h=yB-yT;
+ const MAP={"abcdef":0,"bc":1,"abdeg":2,"abcdg":3,"bcfg":4,"acdfg":5,"acdefg":6,"cdefg":6,"abc":7,"abcf":7,"abcdefg":8,"abcdfg":9,"bcdfg":9};
+ const digits=[],conf=[],cxs=[];let allExact=true;
+ for(const t of T){
+  const xs=[...t.X].sort((p,q)=>p-q),xl=xs[Math.floor(xs.length*0.005)],xr=xs[Math.ceil(xs.length*0.995)-1],gw=xr-xl;
+  cxs.push((xl+xr)/2);
+  if(gw<0.34*h){digits.push(1);conf.push(1);continue}
+  const fill=(fx0,fx1,fy0,fy1)=>{const ax=xl+fx0*gw,bx=xl+fx1*gw,ay=yT+fy0*h,by=yT+fy1*h;let n=0;
+   for(let i=0;i<t.X.length;i++)if(t.X[i]>=ax&&t.X[i]<bx&&t.Y[i]>=ay&&t.Y[i]<by)n++;
+   return n/Math.max(1,(bx-ax)*(by-ay))};
+  const R={a:fill(.22,.78,0,.16),f:fill(0,.26,.12,.46),b:fill(.74,1,.12,.46),g:fill(.22,.78,.42,.58),e:fill(0,.26,.54,.88),c:fill(.74,1,.54,.88),d:fill(.22,.78,.84,1)};
+  let key="";for(const k of "abcdefg")if(R[k]>0.3)key+=k;
+  if(key in MAP){digits.push(MAP[key]);conf.push(1)}
+  else{let bk=null,bd=9;for(const k in MAP){let dd=0;for(const s of "abcdefg")dd+=(k.includes(s)!==key.includes(s))?1:0;if(dd<bd){bd=dd;bk=k}}
+   digits.push(MAP[bk]);conf.push(bd<=1?0.5:0);allExact=false}}
+ // 소수점: 줄 아래쪽의 작은 점이 몇 번째 숫자 뒤에 있는지
+ let dot=-1;const avgA=blobs.reduce((q,b)=>q+b.a,0)/blobs.length,bh=blobs.reduce((q,b)=>q+b.h,0)/blobs.length;
+  for(const dc of smalls){
+  if(dc.a<3||dc.core<0.15*dc.a)continue;
+  if(dc.w>0.25*bh||dc.h>0.25*bh||dc.w>2*dc.h||dc.h>2*dc.w)continue;
+  const x=dc.cx-mx,y=dc.cy-my,xr=x*c-y*sn,yr=x*sn+y*c,dx=xr-bs*yr;
+  if(yr>yT+0.7*h&&yr<yB+0.3*h){let k=0;for(const cx of cxs)if(cx<dx)k++;if(k>0&&k<cxs.length){dot=k;break}}}
+ const text=digits.map((v,i)=>(i===dot?".":"")+v).join("");
+ const intStr=(dot>0?digits.slice(0,dot):digits.slice(0,2)).slice(0,2).join("");
+ return{ok:true,digits,dot,text,int:intStr,exact:allExact,conf,n:T.length,r:best.r,theta:bt*180/Math.PI,shear:bs};
+}
+
+
+const intOnly=()=>$("#intonly").checked;
+try{$("#intonly").checked=localStorage.getItem("opcm_intonly")!=="0"}catch(_){}
+$("#intonly").onchange=e=>{try{localStorage.setItem("opcm_intonly",e.target.checked?"1":"0")}catch(_){}};
+async function readFreq(file){
+ let bmp;try{bmp=await createImageBitmap(file,{imageOrientation:"from-image"})}catch(_){bmp=await createImageBitmap(file)}
+ const k=Math.min(1,1000/Math.max(bmp.width,bmp.height)),w=Math.round(bmp.width*k),h=Math.round(bmp.height*k);
+ const cv=document.createElement("canvas");cv.width=w;cv.height=h;
+ const cx=cv.getContext("2d",{willReadFrequently:true});cx.drawImage(bmp,0,0,w,h);
+ let led=null;try{led=seg7Read(cx.getImageData(0,0,w,h).data,w,h)}catch(_){}
+ if(led&&led.ok&&led.exact&&led.digits.length>=2){
+  const full=led.dot>0?led.text:null;
+  const list=intOnly()?[led.int].concat(full?[full]:[]):(full?[full,led.int]:[led.int]);
+  return{list,via:"led",raw:led.text,int:led.int};
+ }
+ const c=await ocr(file);            // 보조: 글자 인식(Tesseract)
+ let list=c.slice();
+ if(intOnly()){const ints=[...new Set(c.map(n=>String(n).split(".")[0].slice(0,2)).filter(Boolean))];list=ints.concat(c.filter(x=>String(x).includes(".")))}
+ if(led&&led.ok&&led.int&&!list.includes(led.int))list.push(led.int);
+ return{list:[...new Set(list)].slice(0,6),via:"ocr",raw:led&&led.ok?led.text:""};
+}
+let TSP;
+function loadTS(){return window.Tesseract?Promise.resolve():TSP||(TSP=new Promise((ok,ng)=>{
+ const s=document.createElement("script");s.src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js";
+ s.onload=ok;s.onerror=ng;document.head.appendChild(s)}))}
+async function ocr(file){
+ await loadTS();
+ const bmp=await createImageBitmap(file),k=Math.min(1,1400/Math.max(bmp.width,bmp.height));
+ const cv=document.createElement("canvas");cv.width=bmp.width*k;cv.height=bmp.height*k;
+ const x=cv.getContext("2d");x.drawImage(bmp,0,0,cv.width,cv.height);
+ const im=x.getImageData(0,0,cv.width,cv.height),dt=im.data;
+ for(let i=0;i<dt.length;i+=4){const g=.3*dt[i]+.59*dt[i+1]+.11*dt[i+2];dt[i]=dt[i+1]=dt[i+2]=g}
+ x.putImageData(im,0,0);const a=cv.toDataURL();
+ for(let i=0;i<dt.length;i+=4)dt[i]=dt[i+1]=dt[i+2]=255-dt[i];
+ x.putImageData(im,0,0);const b=cv.toDataURL();
+ const w=await Tesseract.createWorker("eng");
+ await w.setParameters({tessedit_char_whitelist:"0123456789.",tessedit_pageseg_mode:"11"});
+ let txt="";for(const u of [a,b]){txt+=" "+(await w.recognize(u)).data.text}
+ await w.terminate();
+ const m=[...new Set((txt.match(/\d{1,3}(\.\d{1,2})?/g)||[]))].filter(n=>+n>0&&+n<=120);
+ m.sort((p,q)=>(/\./.test(q)-/\./.test(p)));return m.slice(0,6);
+}
+
+/* ===== 비고: 음성 입력 ===== */
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+let rec=null,listening=false,finalTxt="";
+function openRem(){
+ if(RB){$("#rt0").textContent=`선택 설비 ${RB.length}개 · 비고 일괄 적용`;$("#rt").value=""}
+ else{const r=R.find(x=>x[0]===curR);$("#rt0").textContent=`No.${curR} ${r[3]} · 비고`;$("#rt").value=getRem(curR)}
+ $("#rs").textContent=SR?"":"이 기기에서는 음성인식이 지원되지 않습니다. 키보드의 마이크(받아쓰기)를 사용하세요.";
+ if(!$("#rdlg").open)$("#rdlg").showModal();
+}
+function toggleMic(){
+ if(!SR){$("#rs").textContent="이 기기에서는 음성인식이 지원되지 않습니다. 키보드의 마이크(받아쓰기)를 사용하세요.";return}
+ if(listening){rec.stop();return}
+ rec=new SR();rec.lang="ko-KR";rec.interimResults=true;rec.continuous=true;
+ rec.onstart=()=>{listening=true;finalTxt=$("#rt").value;$("#mic").classList.add("live");$("#mic").textContent="⏹ 중지";$("#rs").textContent="듣는 중... 말씀하세요"};
+ rec.onresult=e=>{let interim="";
+  for(let i=e.resultIndex;i<e.results.length;i++){const t=e.results[i][0].transcript;
+   if(e.results[i].isFinal)finalTxt+=(finalTxt&&!/\s$/.test(finalTxt)?" ":"")+t.trim();else interim+=t}
+  $("#rt").value=finalTxt+(interim?(finalTxt?" ":"")+interim:"")};
+ rec.onerror=e=>{$("#rs").textContent="음성인식 오류: "+e.error+(e.error==="not-allowed"?" (마이크 권한을 허용하세요)":"")};
+ rec.onend=()=>{listening=false;$("#mic").classList.remove("live");$("#mic").textContent="🎤 음성입력";
+  if($("#rs").textContent.startsWith("듣는 중"))$("#rs").textContent=""};
+ try{rec.start()}catch(_){}
+}
+$("#rt").addEventListener("input",()=>{if(listening)finalTxt=$("#rt").value});
+function stopMic(){try{if(listening&&rec)rec.stop()}catch(_){}}
+function saveRem(){stopMic();
+ const t=$("#rt").value.trim(),w=wk();REM[w]=REM[w]||{};
+ if(RB&&!t){alert("비고 내용을 입력하세요");return}
+ (RB||[curR]).forEach(n=>{REM[w][n]=t});
+ persistRem();$("#rdlg").close();RB=null;render()}
+function clearRem(){stopMic();
+ if(RB&&!confirm(`선택한 설비 ${RB.length}개의 비고를 삭제할까요?`))return;
+ const w=wk();(RB||[curR]).forEach(n=>{REM[w]=REM[w]||{};REM[w][n]=""});
+ persistRem();$("#rdlg").close();RB=null;render()}
+function closeRem(){stopMic();$("#rdlg").close();RB=null}
+
+/* ===== 홈 화면 설치(PWA) ===== */
+let DEFP=null;
+const isStd=()=>matchMedia("(display-mode: standalone)").matches||navigator.standalone===true;
+addEventListener("beforeinstallprompt",e=>{e.preventDefault();DEFP=e});
+addEventListener("appinstalled",()=>{DEFP=null;const b=document.getElementById("instb");if(b)b.style.display="none"});
+if(isStd()){const b=document.getElementById("instb");if(b)b.style.display="none"}
+async function showInstall(){
+ if(DEFP){DEFP.prompt();try{await DEFP.userChoice}catch(_){}DEFP=null;return}
+ const ua=navigator.userAgent,ios=/iPhone|iPad|iPod/.test(ua)||(/Macintosh/.test(ua)&&navigator.maxTouchPoints>1);
+ const box=document.getElementById("ibody");
+ box.innerHTML=ios
+  ?'<b>아이폰/아이패드 (Safari 필수)</b><ol style="margin:6px 0 0;padding-left:20px"><li>Safari로 이 주소를 엽니다 (카카오톡·네이버 앱 내 브라우저는 불가)</li><li>하단 <b>공유 버튼(□↑)</b> 누르기</li><li><b>「홈 화면에 추가」</b> 선택</li><li>이름 확인 후 우측 상단 <b>「추가」</b></li></ol>'
+  :'<b>안드로이드 (Chrome 권장)</b><ol style="margin:6px 0 0;padding-left:20px"><li>Chrome으로 이 주소를 엽니다</li><li>우측 상단 <b>⋮ 메뉴</b> 누르기</li><li><b>「홈 화면에 추가」</b> 또는 <b>「앱 설치」</b> 선택</li><li>확인을 누르면 홈 화면에 아이콘이 생깁니다</li></ol>';
+ document.getElementById("idlg").showModal()}
+
+initDates();chips();render();sync();
+if("serviceWorker" in navigator&&/^https?:$/.test(location.protocol))navigator.serviceWorker.register("sw.js").catch(()=>{});
+</script>
+</body></html>
